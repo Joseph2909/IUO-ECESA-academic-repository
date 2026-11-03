@@ -105,7 +105,7 @@ body {
   width: 44px;
   height: 44px;
   border-radius: var(--radius-md);
-  background-image: url('/Igbinedion-University-logo.jpg');
+  background-image: url('./Igbinedion-University-logo.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -117,7 +117,7 @@ body {
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 .brand-icon-2{
-    background-image: url('/ECESA\ logo.png');
+    background-image: url('./ECESA\ logo.png');
 
 }
 .brand-title {
