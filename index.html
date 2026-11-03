@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IUO × ECESA — ECE Academic Repository</title>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <!-- Brand Logo -->
+      <div class="brand-wrapper" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <div class="brand-icon" >
+        </div>
+        <div class="brand-icon-2" >
+        </div>
+        <div>
+          <span class="brand-title">IUO - ECESA ECE</span>
+          <span class="brand-subtitle">Electrical & Computer Engineering</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons & Auth Profile -->
+      <div class="nav-actions">
+        <button onclick="checkAuthAndUpload()" class="btn btn-green">
+          <i data-lucide="upload-cloud"></i>
+          <span>Upload</span>
+        </button>
+
+        <!-- Unauthenticated View -->
+        <div id="unauthActions" class="nav-actions">
+          <button onclick="openAuthModal('signin')" class="btn btn-outline">Sign In</button>
+          <button onclick="openAuthModal('signup')" class="btn btn-gold">Sign Up</button>
+        </div>
+
+        <!-- Authenticated Profile View -->
+        <div id="authProfile" class="user-profile hidden">
+          <div class="user-meta">
+            <span id="userNameDisplay" class="user-name">Student</span>
+            <span id="userMetaDisplay" class="user-info">100L • Computer Eng.</span>
+          </div>
+
+          <div class="user-avatar" id="userAvatar">IU</div>
+
+          <button id="adminPortalBtn" onclick="toggleAdminPanel()" class="btn btn-admin-portal hidden">
+            Admin Portal
+          </button>
+
+          <button onclick="logoutUser()" title="Log Out" class="btn btn-logout">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <header class="hero">
+    <div class="container" data-aos="fade-up">
+
+      <h1>
+        Past Questions & <span class="hero-highlight">Course Materials</span>
+      </h1>
+      <p>
+        General Abdulsalami Abubakar College of Engineering. Browse, inspect, and share lecture notes, exam papers, and guides.
+      </p>
+
+      <!-- Search Box -->
+      <div class="search-box">
+        <i data-lucide="search" style="color: #94a3b8;"></i>
+        <input type="text" id="searchInput" oninput="filterMaterials()" placeholder="Search course code or title (e.g. EEE 411, CPE 312)..." />
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN REPOSITORY CONTENT -->
+  <main class="container" style="flex: 1; padding-top: 30px;">
+
+    <!-- ADMIN CONTROL CENTER (RESTRICTED) -->
+    <section id="adminPanel" class="admin-panel hidden" data-aos="fade-down">
+      <div class="admin-panel-header">
+        <div class="admin-title-area">
+          <div class="admin-icon-box">
+            <i data-lucide="shield-alert"></i>
+          </div>
+          <div>
+            <h2 style="font-size: 16px; font-weight: 800; color: #0f172a;">Admin Moderation Queue</h2>
+            <p style="font-size: 12px; color: #64748b;">Inspect incoming submissions or purge outdated documents from public access.</p>
+          </div>
+        </div>
+
+        <!-- Tab Toggle for Admin -->
+        <div class="admin-subtabs">
+          <button id="adminTabPending" onclick="switchAdminSubTab('pending')" class="admin-subtab-btn active">
+            Pending Submissions (<span id="pendingCount">0</span>)
+          </button>
+          <button id="adminTabPublished" onclick="switchAdminSubTab('published')" class="admin-subtab-btn">
+            Manage Live Files (<span id="publishedCount">0</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- Pending Submissions -->
+      <div id="adminPendingView"></div>
+
+      <!-- Published Clean-Up Area -->
+      <div id="adminPublishedView" class="hidden"></div>
+    </section>
+
+    <!-- LEVEL TABS & SPECIALIZATION DROPDOWN -->
+    <div class="controls-bar" data-aos="fade-up">
+      <!-- 100L - PG TABS -->
+      <div class="level-tabs" id="levelTabs">
+        <button onclick="setLevel('ALL')" class="level-btn active-tab">All Levels</button>
+        <button onclick="setLevel('100L')" class="level-btn">100L</button>
+        <button onclick="setLevel('200L')" class="level-btn">200L</button>
+        <button onclick="setLevel('300L')" class="level-btn">300L</button>
+        <button onclick="setLevel('400L')" class="level-btn">400L</button>
+        <button onclick="setLevel('500L')" class="level-btn">500L</button>
+        <button onclick="setLevel('PG')" class="level-btn">PG (Postgraduate)</button>
+      </div>
+
+      <!-- Department Filter -->
+      <div class="dept-filter">
+        <label for="deptSelect">Program:</label>
+        <select id="deptSelect" onchange="filterMaterials()">
+          <option value="ALL">All Specializations</option>
+          <option value="Computer Engineering">Computer Engineering</option>
+          <option value="Electrical/Electronics">Electrical & Electronics</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- MATERIAL CARDS GRID -->
+    <div class="materials-grid" id="materialsGrid">
+      <!-- Rendered dynamically via app.js -->
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="emptyState" class="empty-state hidden" data-aos="fade-up">
+      <div class="empty-state-icon">
+        <i data-lucide="folder-open" style="width: 50px; height: 50px;"></i>
+      </div>
+      <h3 style="font-size: 16px; font-weight: 700; color: #475569;">No resources found</h3>
+      <p style="font-size: 13px; color: #94a3b8; margin-top: 4px;">There are currently no uploaded materials matching your filter.</p>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div>
+        <p style="font-weight: 700; color: #ffffff;">Department of Electrical & Computer Engineering</p>
+        <p style="margin-top: 2px;">Igbinedion University Okada, Edo State, Nigeria.</p>
+        <p style="margin-top: 2px;">Made by Omoruyi Enosagie Joseph | President of ECESA </p>
+
+      </div>
+      <div>
+        <p>Accepted Formats: <strong style="color: var(--iuo-gold);">PDF • PPTX • DOCX • EPUB</strong></p>
+        <p style="margin-top: 2px;">&copy; ECESA IUO Chapter. Academic Repository.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= AUTHENTICATION MODAL (SIGN IN / SIGN UP) ================= -->
+  <div id="authModal" class="modal-overlay hidden">
+    <div class="modal-window">
+      <button onclick="closeModal('authModal')" class="btn-close-modal">
+        <i data-lucide="x"></i>
+      </button>
+
+      <!-- Switch Tabs -->
+      <div class="auth-nav-tabs">
+        <button id="tabSignIn" onclick="switchAuthTab('signin')" class="auth-tab active-auth">Sign In</button>
+        <button id="tabSignUp" onclick="switchAuthTab('signup')" class="auth-tab">Create Account</button>
+      </div>
+
+      <!-- SIGN IN FORM -->
+      <form id="signInForm" onsubmit="handleSignIn(event)">
+        <div class="form-group">
+          <label>Official IUO Email</label>
+          <input type="email" id="loginEmail" required placeholder="matric_no@iuokada.edu.ng" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••" />
+        </div>
+
+        <!-- <div style="background: #f8fafc; border: 1px solid var(--border-color); padding: 10px; border-radius: var(--radius-sm); font-size: 11px; margin-bottom: 14px;">
+          <span>Admin Login:</span>
+          <code style="background: #ffffff; padding: 2px 6px; border-radius: 4px; font-weight: 700; color: var(--iuo-blue);">admin@iuokada.edu.ng / admin123</code>
+        </div> -->
+
+        <p id="signInError" class="form-error hidden"></p>
+
+        <button type="submit" class="btn btn-navy" style="width: 100%;">Sign In</button>
+      </form>
+
+      <!-- SIGN UP FORM -->
+      <form id="signUpForm" onsubmit="handleSignUp(event)" class="hidden">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="regName" required placeholder="e.g. Osasere Emmanuel" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Matric No.</label>
+            <input type="text" id="regMatric" required placeholder="IUO/21/ENG04/..." />
+          </div>
+          <div class="form-group">
+            <label>Level</label>
+            <select id="regLevel" required>
+              <option value="100L">100L</option>
+              <option value="200L">200L</option>
+              <option value="300L">300L</option>
+              <option value="400L">400L</option>
+              <option value="500L">500L</option>
+              <option value="PG">PG</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Department</label>
+          <select id="regDept" required>
+            <option value="Computer Engineering">Computer Engineering</option>
+            <option value="Electrical/Electronics">Electrical & Electronics Engineering</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>IUO Email</label>
+          <input type="email" id="regEmail" required placeholder="matric_no@iuokada.edu.ng" />
+          <p class="helper-text">Must end with <strong>@iuokada.edu.ng</strong></p>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Create Password</label>
+            <input type="password" id="regPassword" minlength="6" required placeholder="••••••••" />
+          </div>
+          <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" id="regConfirmPassword" minlength="6" required placeholder="••••••••" />
+          </div>
+        </div>
+
+        <p id="signUpError" class="form-error hidden"></p>
+
+        <button type="submit" class="btn btn-green" style="width: 100%;">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= UPLOAD RESOURCE MODAL ================= -->
+  <div id="uploadModal" class="modal-overlay hidden">
+    <div class="modal-window border-green">
+      <button onclick="closeModal('uploadModal')" class="btn-close-modal">
+        <i data-lucide="x"></i>
+      </button>
+
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+        <i data-lucide="file-up" style="color: var(--nuesa-green);"></i>
+        <h3 style="font-size: 18px; font-weight: 800; color: var(--iuo-navy);">Upload Academic Resource</h3>
+      </div>
+      <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 18px;">
+        Submitted files are reviewed by the department administrator prior to appearing publicly.
+      </p>
+
+      <form id="uploadForm" onsubmit="handleUpload(event)">
+        <div class="form-group">
+          <label>Course Code & Title</label>
+          <input type="text" id="courseTitle" required placeholder="e.g. EEE 411: Modern Control Engineering" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Level</label>
+            <select id="uploadLevel" required>
+              <option value="100L">100L</option>
+              <option value="200L">200L</option>
+              <option value="300L">300L</option>
+              <option value="400L">400L</option>
+              <option value="500L">500L</option>
+              <option value="PG">PG</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <select id="uploadDept" required>
+              <option value="Computer Engineering">Computer Eng.</option>
+              <option value="Electrical/Electronics">Electrical/Electronics</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Resource Category</label>
+          <select id="uploadCategory" required>
+            <option value="Past Question">Past Examination Question</option>
+            <option value="Lecture Notes">Lecture Note / Slide Deck</option>
+            <option value="Lab Manual">Laboratory Manual</option>
+            <option value="Reference Textbook">Approved Textbook</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Select File (PDF, PPTX, DOCX, EPUB Only)</label>
+          <input type="file" id="fileInput" required accept=".pdf,.pptx,.docx,.epub" class="file-input" />
+        </div>
+
+        <button type="submit" class="btn btn-navy" style="width: 100%;">
+          <i data-lucide="check-circle"></i> Submit for Review
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= ADMIN INSPECT & PREVIEW MODAL ================= -->
+  <div id="previewModal" class="modal-overlay hidden">
+    <div class="modal-window preview-modal-window">
+      <!-- Top Bar -->
+      <div class="preview-topbar">
+        <div>
+          <span id="previewBadge" class="file-badge badge-pdf">PDF</span>
+          <h3 id="previewTitle" class="preview-title" style="margin-top: 4px;">Document Inspector</h3>
+          <p id="previewMeta" class="preview-meta">Uploader meta</p>
+        </div>
+        <button onclick="closeModal('previewModal')" class="btn-close-modal" style="color: #ffffff;">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Live Inspection Body -->
+      <div class="preview-body" id="previewContainer"></div>
+
+      <!-- Action Bottom Bar -->
+      <div class="preview-footer">
+        <span id="previewStatusLabel" style="font-size: 12px; color: var(--text-muted);">Status: Pending</span>
+        <div id="previewActionButtons" style="display: flex; gap: 8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
